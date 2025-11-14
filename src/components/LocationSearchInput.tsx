@@ -55,7 +55,7 @@ export default function LocationSearchInput({
     // Initialize with location if value is provided
     value ? { lat: 0, lng: 0, address: value, displayName: value } : null
   );
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<number>();
   const containerRef = useRef<HTMLDivElement>(null);
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
   const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
