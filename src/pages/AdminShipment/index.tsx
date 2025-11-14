@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { ShipmentAPI } from '../../lib/api';
+import type { AdminAddress } from '../../types/address';
+import AddressSelector from '../../components/AddressSelector';
 import ShipmentForm from './ShipmentForm';
 import LiveTrackingMap from './LiveTrackingMap';
 import DeliveryBoyStatus from './DeliveryBoyStatus';
+import { LogOut } from 'lucide-react';
 
 export interface AdminLocation {
   latitude: number;
   longitude: number;
   address?: string;
+  houseAddress?: string;
+  landmark?: string;
 }
 
 export interface CustomerDetails {
@@ -27,10 +35,10 @@ export interface ShipmentRequest {
 
 function AdminShipment() {
   const navigate = useNavigate();
-  const [adminLocation, setAdminLocation] = useState<AdminLocation | null>(null);
+  const { user, signOut } = useAuth();
+  const [selectedAddress, setSelectedAddress] = useState<AdminAddress | null>(null);
   const [adminMobile, setAdminMobile] = useState<string>('');
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const [adminName, setAdminName] = useState<string>('');
   const [allShipments, setAllShipments] = useState<any[]>([]);
   const [completedShipments, setCompletedShipments] = useState<any[]>([]);
   const [activeShipmentIndex, setActiveShipmentIndex] = useState<number>(0);
@@ -38,47 +46,50 @@ function AdminShipment() {
   const [currentTab, setCurrentTab] = useState<'active' | 'completed'>('active');
   const [notifications, setNotifications] = useState<string[]>([]);
 
-  // Fetch admin's live location
+  // Load admin profile from Supabase
   useEffect(() => {
-    fetchAdminLocation();
-  }, []);
-
-  // Restore admin mobile from localStorage
-  useEffect(() => {
-    const savedMobile = localStorage.getItem('adminMobile');
-    if (savedMobile) {
-      setAdminMobile(savedMobile);
+    if (user) {
+      loadAdminProfile();
     }
+  }, [user]);
 
-    const savedLocation = localStorage.getItem('adminLocation');
-    if (savedLocation) {
-      try {
-        setAdminLocation(JSON.parse(savedLocation));
-      } catch (error) {
-        console.error('Failed to parse saved location:', error);
+  const loadAdminProfile = async () => {
+    if (!user) return;
+
+    try {
+      // Fetch basic profile from Supabase
+      const { data, error } = await supabase
+        .from('admin_profiles')
+        .select('name, mobile')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading profile:', error);
       }
+
+      if (data) {
+        setAdminName(data.name || '');
+        setAdminMobile(data.mobile || '');
+      } else {
+        // Fallback to user metadata
+        setAdminName(user.user_metadata?.name || '');
+        setAdminMobile(user.user_metadata?.mobile || '');
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
     }
-  }, []);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   // Fetch active shipments
   const fetchActiveShipments = async () => {
-    const mobile = localStorage.getItem('adminMobile');
-    if (!mobile) return;
-
     try {
-      const url = `${import.meta.env.VITE_BACKEND_BASE_URL}/shipments/active?adminMobile=${encodeURIComponent(mobile)}`;
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          setAllShipments([]);
-          return;
-        }
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await ShipmentAPI.getActive();
       
       if (data && Array.isArray(data)) {
         // Check for status changes (delivered shipments)
@@ -125,34 +136,27 @@ function AdminShipment() {
       }
     } catch (error) {
       console.error('Error fetching active shipments:', error);
+      // If it's an auth error, user will be redirected by ProtectedRoute
+      if (error instanceof Error && error.message.includes('authentication')) {
+        navigate('/login');
+      }
     }
   };
 
   // Fetch completed shipments
   const fetchCompletedShipments = async () => {
-    const mobile = localStorage.getItem('adminMobile');
-    if (!mobile) return;
-
     try {
-      const url = `${import.meta.env.VITE_BACKEND_BASE_URL}/shipments/completed?adminMobile=${encodeURIComponent(mobile)}`;
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          setCompletedShipments([]);
-          return;
-        }
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await ShipmentAPI.getCompleted();
       
       if (data && Array.isArray(data)) {
         setCompletedShipments(data);
       }
     } catch (error) {
       console.error('Error fetching completed shipments:', error);
+      // If it's an auth error, user will be redirected by ProtectedRoute
+      if (error instanceof Error && error.message.includes('authentication')) {
+        navigate('/login');
+      }
     }
   };
 
@@ -173,78 +177,33 @@ function AdminShipment() {
 
   // Polling: Fetch active shipments every 5 seconds
   useEffect(() => {
-    const mobile = localStorage.getItem('adminMobile');
-    if (!mobile) return;
+    if (!user) return; // Only poll when authenticated
 
     const interval = setInterval(() => {
       fetchActiveShipments();
     }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(interval);
-  }, [allShipments, activeShipment]); // Re-run when shipments change
-
-  const fetchAdminLocation = () => {
-    setIsLoadingLocation(true);
-    setLocationError(null);
-
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by your browser');
-      setIsLoadingLocation(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const location: AdminLocation = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-
-        // Reverse geocode to get address
-        try {
-          const address = await reverseGeocode(location.latitude, location.longitude);
-          location.address = address;
-        } catch (error) {
-          console.error('Failed to get address:', error);
-        }
-
-        setAdminLocation(location);
-        setIsLoadingLocation(false);
-      },
-      (error) => {
-        setLocationError(`Failed to get location: ${error.message}`);
-        setIsLoadingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-  };
-
-  const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-      );
-      const data = await response.json();
-      return data.display_name || 'Address not found';
-    } catch (error) {
-      return 'Address not found';
-    }
-  };
+  }, [allShipments, activeShipment, user]); // Re-run when shipments change
 
   const handleShipmentCreate = async (customerDetails: CustomerDetails, specificRiderId?: string) => {
-    if (!adminLocation) {
-      alert('Admin location not available. Please refresh location.');
+    if (!selectedAddress) {
+      alert('Please select an address first');
       return;
     }
 
     if (!adminMobile) {
-      alert('Please enter your mobile number first');
+      alert('Please set your mobile number in Profile Settings');
       return;
     }
+
+    const adminLocation: AdminLocation = {
+      latitude: selectedAddress.location_lat,
+      longitude: selectedAddress.location_lng,
+      address: selectedAddress.location_address,
+      houseAddress: selectedAddress.location_house_address || undefined,
+      landmark: selectedAddress.location_landmark || undefined,
+    };
 
     const shipmentRequest: ShipmentRequest & { specificRiderId?: string } = {
       adminLocation,
@@ -264,36 +223,7 @@ function AdminShipment() {
 
     try {
       // Call API to create shipment and notify delivery boy(s)
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/shipments/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(shipmentRequest),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
-        console.error('❌ Backend error:', response.status, errorData);
-        
-        // Handle specific error codes
-        switch (response.status) {
-          case 400:
-            alert(`❌ ${errorData.detail || 'Invalid request. Please check your input.'}`);
-            break;
-          case 404:
-            alert('❌ Rider not found. Please select a different delivery boy.');
-            break;
-          case 500:
-            alert('❌ Server error. Please try again later.');
-            break;
-          default:
-            alert(`❌ Error: ${errorData.detail || 'An error occurred'}`);
-        }
-        return;
-      }
-
-      const data = await response.json();
+      const data = await ShipmentAPI.create(shipmentRequest);
       console.log('✅ Shipment created:', data);
       
       // Add new shipment to the list
@@ -311,9 +241,24 @@ function AdminShipment() {
         const riderCount = data.notifiedRiders?.length || 0;
         alert(`✅ Shipment #${data.id} created! Notified ${riderCount} rider(s).`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create shipment:', error);
-      alert('❌ Network error. Please check your connection and try again.');
+      
+      // Handle authentication errors
+      if (error.message?.includes('authentication')) {
+        alert('❌ Please login to create shipments.');
+        navigate('/login');
+        return;
+      }
+      
+      // Handle profile errors
+      if (error.message?.includes('profile')) {
+        alert('❌ Please complete your profile first.');
+        navigate('/profile');
+        return;
+      }
+      
+      alert(`❌ ${error.message || 'Network error. Please check your connection and try again.'}`);
     }
   };
 
@@ -331,20 +276,7 @@ function AdminShipment() {
 
   const handleResendNotification = async (shipmentId: number) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_BASE_URL}/shipments/${shipmentId}/resend`,
-        {
-          method: 'POST',
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Failed to resend' }));
-        alert(`❌ ${errorData.detail}`);
-        return;
-      }
-
-      const data = await response.json();
+      const data = await ShipmentAPI.resendNotification(shipmentId);
       console.log('✅ Resend response:', data);
 
       if (data.notifiedRiders && data.notifiedRiders.length === 0) {
@@ -354,26 +286,18 @@ function AdminShipment() {
         alert(`✅ Notification resent to ${riderCount} rider(s)!`);
         
         // Refresh shipments list
-        const mobile = localStorage.getItem('adminMobile');
-        if (mobile) {
-          const url = `${import.meta.env.VITE_BACKEND_BASE_URL}/shipments/active?adminMobile=${encodeURIComponent(mobile)}`;
-          const refreshResponse = await fetch(url);
-          if (refreshResponse.ok) {
-            const refreshedData = await refreshResponse.json();
-            if (refreshedData && Array.isArray(refreshedData) && refreshedData.length > 0) {
-              setAllShipments(refreshedData);
-              // Find and set the active shipment
-              const updated = refreshedData.find((s: any) => s.id === shipmentId);
-              if (updated) {
-                setActiveShipment(updated);
-              }
-            }
-          }
-        }
+        await fetchActiveShipments();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error resending notification:', error);
-      alert('❌ Failed to resend notification. Please try again.');
+      
+      if (error.message?.includes('authentication')) {
+        alert('❌ Please login to resend notifications.');
+        navigate('/login');
+        return;
+      }
+      
+      alert(`❌ ${error.message || 'Failed to resend notification. Please try again.'}`);
     }
   };
 
@@ -400,19 +324,23 @@ function AdminShipment() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Admin Shipment Portal</h1>
-              <p className="text-sm text-gray-500 mt-1">Create and manage delivery requests</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {adminName ? `Welcome, ${adminName}` : 'Create and manage delivery requests'}
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => {
-                  // Store admin info in localStorage before navigating
-                  if (adminMobile && adminLocation) {
-                    localStorage.setItem('adminMobile', adminMobile);
-                    localStorage.setItem('adminLocation', JSON.stringify(adminLocation));
-                  }
-                  navigate('/map');
-                }}
-                disabled={!adminMobile || !adminLocation}
+                onClick={() => navigate('/profile')}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center gap-2 font-medium"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Profile
+              </button>
+              <button
+                onClick={() => navigate('/map')}
+                disabled={!adminMobile || !selectedAddress}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 font-semibold"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -421,73 +349,39 @@ function AdminShipment() {
                 MAP
               </button>
               <button
-                onClick={fetchAdminLocation}
-                disabled={isLoadingLocation}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-2"
+                onClick={handleSignOut}
+                className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 flex items-center gap-2 font-medium"
               >
-                {isLoadingLocation ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Fetching...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Refresh Location
-                  </>
-                )}
+                <LogOut className="h-5 w-5" />
+                Sign Out
               </button>
             </div>
           </div>
 
-          {/* Admin Location Display */}
-          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              </svg>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-blue-900">Your Location (Shop Address)</h3>
-                {adminLocation ? (
-                  <div className="mt-1">
-                    <p className="text-sm text-blue-800">{adminLocation.address || 'Getting address...'}</p>
-                    <p className="text-xs text-blue-600 mt-1">
-                      Lat: {adminLocation.latitude.toFixed(6)}, Lng: {adminLocation.longitude.toFixed(6)}
-                    </p>
-                  </div>
-                ) : locationError ? (
-                  <p className="text-sm text-red-600 mt-1">{locationError}</p>
-                ) : (
-                  <p className="text-sm text-blue-700 mt-1">Fetching your location...</p>
-                )}
-              </div>
-            </div>
+          {/* Admin Location & Mobile */}
+          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+            {/* Address Selector */}
+            <AddressSelector
+              selectedAddress={selectedAddress}
+              onAddressChange={setSelectedAddress}
+            />
 
             {/* Admin Mobile Number */}
-            <div className="mt-3 pt-3 border-t border-blue-200">
+            <div className="pt-3 border-t border-blue-200">
               <label className="block text-sm font-medium text-blue-900 mb-2">
-                Your Mobile Number (Shared with delivery boy)
+                Your Mobile Number (Shared with delivery boy) <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 value={adminMobile}
-                onChange={(e) => {
-                  const mobile = e.target.value;
-                  setAdminMobile(mobile);
-                  // Save to localStorage for persistence
-                  if (mobile) {
-                    localStorage.setItem('adminMobile', mobile);
-                  }
-                }}
+                onChange={(e) => setAdminMobile(e.target.value)}
                 placeholder="+91 XXXXX XXXXX"
                 className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                readOnly
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Update in <button onClick={() => navigate('/profile')} className="text-blue-600 hover:underline">Profile Settings</button>
+              </p>
             </div>
           </div>
         </div>
@@ -500,7 +394,7 @@ function AdminShipment() {
           <div>
             <ShipmentForm
               onSubmit={handleShipmentCreate}
-              disabled={!adminLocation || !adminMobile}
+              disabled={!selectedAddress || !adminMobile}
             />
           </div>
 
@@ -661,7 +555,13 @@ function AdminShipment() {
                   onResend={handleResendNotification}
                 />
                 <LiveTrackingMap
-                  adminLocation={adminLocation}
+                  adminLocation={selectedAddress ? {
+                    latitude: selectedAddress.location_lat,
+                    longitude: selectedAddress.location_lng,
+                    address: selectedAddress.location_address,
+                    houseAddress: selectedAddress.location_house_address || undefined,
+                    landmark: selectedAddress.location_landmark || undefined,
+                  } : null}
                   shipment={activeShipment}
                 />
               </>

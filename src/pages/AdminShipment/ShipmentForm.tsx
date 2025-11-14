@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CustomerDetails } from './index';
+import LocationSearchInput, { LocationResult } from '../../components/LocationSearchInput';
 
 interface DeliveryBoy {
   id: string;
@@ -29,6 +30,9 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
   const [deliveryBoys, setDeliveryBoys] = useState<DeliveryBoy[]>([]);
   const [loadingRiders, setLoadingRiders] = useState(false);
   const [selectedRider, setSelectedRider] = useState<string | null>(null);
+  const [customerLocationDisplay, setCustomerLocationDisplay] = useState<string>('');
+  const [customerHouseAddress, setCustomerHouseAddress] = useState<string>('');
+  const [customerLandmark, setCustomerLandmark] = useState<string>('');
 
   const handleChange = (field: keyof CustomerDetails, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -36,6 +40,34 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  };
+
+  const handleCustomerLocationSelect = (location: LocationResult) => {
+    // Store location as coordinates format that backend can parse
+    const locationLink = `${location.lat},${location.lng}`;
+    
+    // Build full address from location + house address
+    const fullAddress = [
+      customerHouseAddress,
+      location.address
+    ].filter(Boolean).join(', ');
+    
+    setFormData((prev) => ({ 
+      ...prev, 
+      locationLink,
+      address: fullAddress || location.address,
+      landmark: customerLandmark || location.landmark || prev.landmark
+    }));
+    
+    setCustomerLocationDisplay(location.displayName);
+    
+    // Clear errors
+    setErrors((prev) => ({ 
+      ...prev, 
+      locationLink: undefined,
+      address: undefined,
+      landmark: undefined
+    }));
   };
 
   const validate = (): boolean => {
@@ -82,6 +114,9 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
         landmark: '',
         price: 0,
       });
+      setCustomerLocationDisplay('');
+      setCustomerHouseAddress('');
+      setCustomerLandmark('');
     }
   };
 
@@ -112,6 +147,9 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
       landmark: '',
       price: 0,
     });
+    setCustomerLocationDisplay('');
+    setCustomerHouseAddress('');
+    setCustomerLandmark('');
   };
 
   return (
@@ -119,24 +157,34 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Create Delivery Request</h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Customer Location Link */}
+        {/* Customer Location Search */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Customer Location Link <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="url"
-            value={formData.locationLink}
-            onChange={(e) => handleChange('locationLink', e.target.value)}
-            placeholder="https://maps.google.com/?q=28.6139,77.2090"
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.locationLink ? 'border-red-500' : 'border-gray-300'
-            }`}
+          <LocationSearchInput
+            value={customerLocationDisplay}
+            onChange={handleCustomerLocationSelect}
+            placeholder="Search for customer location..."
+            label="Customer Location"
+            required
+            error={errors.locationLink}
+            showAddressFields={true}
+            houseAddress={customerHouseAddress}
+            landmark={customerLandmark}
+            onHouseAddressChange={(value) => {
+              setCustomerHouseAddress(value);
+              // Update address in formData
+              if (formData.locationLink) {
+                const fullAddress = [value, customerLocationDisplay].filter(Boolean).join(', ');
+                setFormData(prev => ({ ...prev, address: fullAddress }));
+              }
+            }}
+            onLandmarkChange={(value) => {
+              setCustomerLandmark(value);
+              // Update landmark in formData
+              setFormData(prev => ({ ...prev, landmark: value }));
+              // Clear landmark error
+              setErrors(prev => ({ ...prev, landmark: undefined }));
+            }}
           />
-          {errors.locationLink && (
-            <p className="text-xs text-red-600 mt-1">{errors.locationLink}</p>
-          )}
-          <p className="text-xs text-gray-500 mt-1">Paste Google Maps or any location link</p>
         </div>
 
         {/* Customer Name */}
@@ -173,42 +221,19 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
           {errors.mobile && <p className="text-xs text-red-600 mt-1">{errors.mobile}</p>}
         </div>
 
-        {/* Customer Address */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full Address <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={formData.address}
-            onChange={(e) => handleChange('address', e.target.value)}
-            placeholder="House No., Street, Area, City"
-            rows={3}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.address ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
-          {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address}</p>}
-        </div>
-
-        {/* Landmark */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Landmark <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.landmark}
-            onChange={(e) => handleChange('landmark', e.target.value)}
-            placeholder="Near Metro Station, Mall, etc."
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.landmark ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
-          {errors.landmark && <p className="text-xs text-red-600 mt-1">{errors.landmark}</p>}
-          <p className="text-xs text-gray-500 mt-1">
-            ⚠️ Only landmark will be shared initially with delivery boy
-          </p>
-        </div>
+        {/* Address and Landmark are now included in LocationSearchInput above */}
+        {/* Display selected address for confirmation */}
+        {formData.address && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-xs font-semibold text-green-900 uppercase mb-1">Selected Address</p>
+            <p className="text-sm text-green-800">{formData.address}</p>
+            {formData.landmark && (
+              <p className="text-xs text-green-700 mt-1">
+                📍 Landmark: {formData.landmark}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Delivery Price */}
         <div>

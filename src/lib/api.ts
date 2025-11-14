@@ -1,16 +1,52 @@
+import { supabase } from './supabase';
+
 const BASE_URL = (import.meta as any)?.env?.VITE_BACKEND_BASE_URL || "http://localhost:8000";
 
+/**
+ * Get the current Supabase session token
+ */
+async function getAuthToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? null;
+}
+
+/**
+ * Authenticated API GET request
+ */
 export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = await getAuthToken();
+  
   const res = await fetch(`${BASE_URL}${path}`, {
     credentials: "include",
     ...init,
     headers: {
       "Accept": "application/json",
+      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
       ...init?.headers,
     },
   });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
+}
+
+/**
+ * Authenticated API request (any method)
+ */
+export async function authenticatedFetch(path: string, init?: RequestInit): Promise<Response> {
+  const token = await getAuthToken();
+  
+  if (!token) {
+    throw new Error('No authentication token available. Please login.');
+  }
+  
+  return fetch(`${BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...init?.headers,
+    },
+  });
 }
 
 export function getBaseUrl() {
@@ -22,41 +58,53 @@ export const RidersAPI = {
   listLive: () => apiGet<import("../types/rider").Rider[]>("/riders/live"),
 };
 
-// Shipment endpoints
+// Shipment endpoints with authentication
 export const ShipmentAPI = {
   create: async (data: any) => {
-    const res = await fetch(`${BASE_URL}/shipments/create`, {
+    const response = await authenticatedFetch('/shipments/create', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    return res.json();
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+      throw new Error(errorData.detail || `${response.status} ${response.statusText}`);
+    }
+    
+    return response.json();
   },
   
-  getResponses: (shipmentId: string) => 
-    apiGet<any>(`/shipments/${shipmentId}/responses`),
+  getResponses: async (shipmentId: string) => {
+    const response = await authenticatedFetch(`/shipments/${shipmentId}/responses`);
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
   
-  getRiderLocation: (riderId: string) =>
-    apiGet<{ lat: number; lng: number }>(`/riders/${riderId}/location`),
+  getRiderLocation: async (riderId: string) => {
+    const response = await authenticatedFetch(`/riders/${riderId}/location`);
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
   
   resendNotification: async (shipmentId: number) => {
-    const res = await fetch(`${BASE_URL}/shipments/${shipmentId}/resend`, {
+    const response = await authenticatedFetch(`/shipments/${shipmentId}/resend`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    return res.json();
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
   },
   
-  getActive: (adminMobile: string) =>
-    apiGet<any[]>(`/shipments/active?adminMobile=${encodeURIComponent(adminMobile)}`),
+  // Updated to use authenticated endpoints (no mobile parameter needed)
+  getActive: async () => {
+    const response = await authenticatedFetch('/shipments/active');
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
   
-  getCompleted: (adminMobile: string) =>
-    apiGet<any[]>(`/shipments/completed?adminMobile=${encodeURIComponent(adminMobile)}`),
+  getCompleted: async () => {
+    const response = await authenticatedFetch('/shipments/completed');
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
 };
 
