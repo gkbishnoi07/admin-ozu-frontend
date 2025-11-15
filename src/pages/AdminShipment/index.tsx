@@ -197,23 +197,6 @@ function AdminShipment() {
       return;
     }
 
-    // Check if riders are available BEFORE creating shipment (only for broadcast)
-    if (!specificRiderId) {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL || 'https://ozu-source-code-production.up.railway.app'}/riders/available`);
-        if (response.ok) {
-          const availableRiders = await response.json();
-          if (!availableRiders || availableRiders.length === 0) {
-            alert('❌ No delivery boys are currently available.\n\nPlease try again after some time.');
-            return; // Don't create shipment
-          }
-        }
-      } catch (error) {
-        console.error('Error checking available riders:', error);
-        // Continue anyway if check fails
-      }
-    }
-
     const adminLocation: AdminLocation = {
       latitude: selectedAddress.location_lat,
       longitude: selectedAddress.location_lng,

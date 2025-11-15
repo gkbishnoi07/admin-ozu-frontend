@@ -120,80 +120,80 @@ function DeliveryBoyStatus({ shipmentId, shipmentStatus }: DeliveryBoyStatusProp
           </div>
         ) : (
           <div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-2">
-                <svg className="animate-pulse w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" />
-                </svg>
-                <p className="text-sm text-yellow-800 font-medium">
-                  Waiting for delivery boy to accept...
-                </p>
-              </div>
-            </div>
-
-            {responses.length > 0 ? (
-              <div className="space-y-2">
-                {responses.map((response, index) => (
-                  <div
-                    key={`${response.riderId}-${index}`}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
-                      response.status === 'declined'
-                        ? 'bg-red-50 border-red-200'
-                        : 'bg-gray-50 border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          response.status === 'declined'
-                            ? 'bg-red-500'
-                            : 'bg-gray-400'
-                        }`}
-                      >
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {response.riderName}
-                        </p>
-                        <p className="text-xs text-gray-500">{response.riderMobile}</p>
-                      </div>
-                    </div>
-                    <div>
-                      {response.status === 'declined' ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          ❌ Declined
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
-                          ⏳ Pending
-                        </span>
-                      )}
-                    </div>
+            {/* Show message if no riders available */}
+            {responses.length === 0 ? (
+              <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-5 text-center">
+                <div className="flex flex-col items-center gap-3">
+                  <svg className="w-12 h-12 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div>
+                    <p className="text-lg font-semibold text-amber-900 mb-1">
+                      ❌ No delivery boys are currently available.
+                    </p>
+                    <p className="text-sm text-amber-700">
+                      Please try again after some time.
+                    </p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <svg className="w-12 h-12 text-amber-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <p className="text-sm font-medium text-gray-900 mb-1">No delivery boys found</p>
-                <p className="text-xs text-gray-500 mb-3">
-                  The backend hasn't created response records yet
-                </p>
-                <div className="text-xs text-left bg-amber-50 border border-amber-200 rounded p-3 max-w-md mx-auto">
-                  <p className="font-semibold text-amber-900 mb-2">⚠️ Backend Issue:</p>
-                  <p className="text-amber-800">
-                    When creating a shipment, the backend must create <code className="bg-amber-100 px-1 rounded">shipment_responses</code> records for each notified rider.
-                  </p>
-                  <p className="text-amber-700 mt-2 text-xs">
-                    Check console (F12) for API errors.
-                  </p>
                 </div>
               </div>
+            ) : (
+              <>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <svg className="animate-pulse w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" />
+                    </svg>
+                    <p className="text-sm text-yellow-800 font-medium">
+                      Waiting for delivery boy to accept...
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {responses.map((response, index) => (
+                    <div
+                      key={`${response.riderId}-${index}`}
+                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                        response.status === 'declined'
+                          ? 'bg-red-50 border-red-200'
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            response.status === 'declined'
+                              ? 'bg-red-500'
+                              : 'bg-gray-400'
+                          }`}
+                        >
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {response.riderName}
+                          </p>
+                          <p className="text-xs text-gray-500">{response.riderMobile}</p>
+                        </div>
+                      </div>
+                      <div>
+                        {response.status === 'declined' ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            ❌ Declined
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                            ⏳ Pending
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}
