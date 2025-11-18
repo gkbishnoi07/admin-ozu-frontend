@@ -108,3 +108,26 @@ export const ShipmentAPI = {
   },
 };
 
+// Issue tracking endpoints
+export const IssuesAPI = {
+  getPending: async () => {
+    const response = await authenticatedFetch('/shipments/issues/pending');
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
+  
+  respond: async (issueId: number, data: { action: 'redeliver' | 'return_to_shop', message: string }) => {
+    const response = await authenticatedFetch(`/shipments/issues/${issueId}/respond`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+      throw new Error(errorData.detail || `${response.status} ${response.statusText}`);
+    }
+    
+    return response.json();
+  },
+};
+

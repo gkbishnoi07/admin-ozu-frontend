@@ -7,6 +7,7 @@ import AdminPortal from '@/pages/AdminPortal';
 import AdminShipment from '@/pages/AdminShipment';
 import AllShipmentsMap from '@/pages/AllShipmentsMap';
 import AdminProfile from '@/pages/AdminProfile';
+import AdminIssues from '@/pages/AdminIssues';
 
 function App() {
   return (
@@ -55,6 +56,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminPortal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/issues"
+            element={
+              <ProtectedRoute>
+                <AdminIssues />
               </ProtectedRoute>
             }
           />
