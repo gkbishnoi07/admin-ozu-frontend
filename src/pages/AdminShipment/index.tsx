@@ -55,13 +55,7 @@ function AdminShipment() {
   const { counts: issueCounts } = useIssues(true, 15000);
 
   // Load admin profile from Supabase
-  useEffect(() => {
-    if (user) {
-      loadAdminProfile();
-    }
-  }, [user]);
-
-  const loadAdminProfile = async () => {
+  const loadAdminProfile = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -87,12 +81,27 @@ function AdminShipment() {
     } catch (error) {
       console.error('Error loading profile:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadAdminProfile();
+    }
+  }, [user, loadAdminProfile]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
   };
+
+  // Show notification - memoize to avoid recreation (defined before fetchActiveShipments)
+  const showNotification = useCallback((message: string) => {
+    setNotifications(prev => [...prev, message]);
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(m => m !== message));
+    }, 5000);
+  }, []);
 
   // Fetch active shipments - use useCallback to memoize
   const fetchActiveShipments = useCallback(async () => {
@@ -159,7 +168,7 @@ function AdminShipment() {
         navigate('/login');
       }
     }
-  }, [navigate]); // Only depend on navigate
+  }, [navigate, showNotification]); // Include showNotification in dependencies
 
   // Fetch completed shipments
   const fetchCompletedShipments = async () => {
@@ -176,15 +185,6 @@ function AdminShipment() {
         navigate('/login');
       }
     }
-  };
-
-  // Show notification
-  const showNotification = (message: string) => {
-    setNotifications(prev => [...prev, message]);
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(m => m !== message));
-    }, 5000);
   };
 
   // Sync refs with state
