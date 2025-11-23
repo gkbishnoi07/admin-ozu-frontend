@@ -188,7 +188,7 @@ function AdminShipment() {
     }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(interval);
-  }, [allShipments, activeShipment, user]); // Re-run when shipments change
+  }, [user]); // Only depend on user, not on shipments to avoid infinite loop
 
   const handleShipmentCreate = async (customerDetails: CustomerDetails, specificRiderId?: string) => {
     if (!selectedAddress) {
