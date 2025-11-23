@@ -88,7 +88,7 @@ function DeliveryBoyStatus({ shipmentId, shipmentStatus }: DeliveryBoyStatusProp
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [shipmentId, shipmentStatus, acceptedRider]);
+  }, [shipmentId]); // Only depend on shipmentId to avoid infinite loop
 
   if (loading) {
     return (

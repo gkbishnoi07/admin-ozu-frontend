@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -47,6 +47,10 @@ function AdminShipment() {
   const [currentTab, setCurrentTab] = useState<'active' | 'completed'>('active');
   const [notifications, setNotifications] = useState<string[]>([]);
   
+  // Use refs to track state without causing re-renders in useEffect
+  const allShipmentsRef = useRef<any[]>([]);
+  const activeShipmentRef = useRef<any>(null);
+  
   // Fetch issue counts for badge
   const { counts: issueCounts } = useIssues(true, 15000);
 
@@ -90,21 +94,22 @@ function AdminShipment() {
     navigate('/login');
   };
 
-  // Fetch active shipments
-  const fetchActiveShipments = async () => {
+  // Fetch active shipments - use useCallback to memoize
+  const fetchActiveShipments = useCallback(async () => {
     try {
       const data = await ShipmentAPI.getActive();
       
       if (data && Array.isArray(data)) {
-        // Check for status changes (delivered shipments)
-        const previousIds = allShipments.map(s => s.id);
+        // Use refs to access current state without causing dependency issues
+        const previousShipments = allShipmentsRef.current;
+        const previousIds = previousShipments.map(s => s.id);
         const newIds = data.map((s: any) => s.id);
         
         // Find shipments that were removed (moved to completed)
         const removedIds = previousIds.filter(id => !newIds.includes(id));
-        if (removedIds.length > 0 && allShipments.length > 0) {
+        if (removedIds.length > 0 && previousShipments.length > 0) {
           removedIds.forEach(id => {
-            const shipment = allShipments.find(s => s.id === id);
+            const shipment = previousShipments.find(s => s.id === id);
             if (shipment) {
               showNotification(`📦 Shipment #${id} has been delivered! ✅`);
             }
@@ -113,27 +118,36 @@ function AdminShipment() {
         
         // Check for newly accepted shipments
         data.forEach((newShipment: any) => {
-          const oldShipment = allShipments.find(s => s.id === newShipment.id);
+          const oldShipment = previousShipments.find(s => s.id === newShipment.id);
           if (oldShipment && oldShipment.status === 'pending' && newShipment.status === 'assigned') {
             showNotification(`✅ Shipment #${newShipment.id} has been accepted!`);
           }
         });
         
+        // Update refs
+        allShipmentsRef.current = data;
+        
+        // Update state
         setAllShipments(data);
         
         // Update active shipment if it still exists
-        if (activeShipment) {
-          const updated = data.find((s: any) => s.id === activeShipment.id);
+        const currentActiveShipment = activeShipmentRef.current;
+        if (currentActiveShipment) {
+          const updated = data.find((s: any) => s.id === currentActiveShipment.id);
           if (updated) {
+            activeShipmentRef.current = updated;
             setActiveShipment(updated);
           } else if (data.length > 0) {
             // Active shipment was removed, select first available
+            activeShipmentRef.current = data[0];
             setActiveShipment(data[0]);
             setActiveShipmentIndex(0);
           } else {
+            activeShipmentRef.current = null;
             setActiveShipment(null);
           }
-        } else if (data.length > 0 && !activeShipment) {
+        } else if (data.length > 0 && !currentActiveShipment) {
+          activeShipmentRef.current = data[0];
           setActiveShipment(data[0]);
           setActiveShipmentIndex(0);
         }
@@ -145,7 +159,7 @@ function AdminShipment() {
         navigate('/login');
       }
     }
-  };
+  }, [navigate]); // Only depend on navigate
 
   // Fetch completed shipments
   const fetchCompletedShipments = async () => {
@@ -173,11 +187,20 @@ function AdminShipment() {
     }, 5000);
   };
 
+  // Sync refs with state
+  useEffect(() => {
+    allShipmentsRef.current = allShipments;
+  }, [allShipments]);
+
+  useEffect(() => {
+    activeShipmentRef.current = activeShipment;
+  }, [activeShipment]);
+
   // Initial load of active shipments
   useEffect(() => {
     const timer = setTimeout(fetchActiveShipments, 500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [fetchActiveShipments]);
 
   // Polling: Fetch active shipments every 5 seconds
   useEffect(() => {
@@ -188,7 +211,7 @@ function AdminShipment() {
     }, 5000); // Poll every 5 seconds
 
     return () => clearInterval(interval);
-  }, [user]); // Only depend on user, not on shipments to avoid infinite loop
+  }, [user, fetchActiveShipments]); // Depend on user and memoized fetchActiveShipments
 
   const handleShipmentCreate = async (customerDetails: CustomerDetails, specificRiderId?: string) => {
     if (!selectedAddress) {
