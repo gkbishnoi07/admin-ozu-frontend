@@ -56,6 +56,38 @@ export function getBaseUrl() {
 // Riders endpoints (adjust to your FastAPI routes if needed)
 export const RidersAPI = {
   listLive: () => apiGet<import("../types/rider").Rider[]>("/riders/live"),
+  
+  // Rider Approval endpoints
+  getPending: async () => {
+    const response = await authenticatedFetch('/riders/pending');
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
+  
+  getApproved: async () => {
+    const response = await authenticatedFetch('/riders/approved');
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
+  
+  approve: async (riderId: string | number, riderName?: string) => {
+    const url = riderName 
+      ? `/riders/${riderId}/approve?rider_name=${encodeURIComponent(riderName)}`
+      : `/riders/${riderId}/approve`;
+    const response = await authenticatedFetch(url, {
+      method: 'POST',
+    });
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
+  
+  reject: async (riderId: string | number) => {
+    const response = await authenticatedFetch(`/riders/${riderId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    return response.json();
+  },
 };
 
 // Shipment endpoints with authentication

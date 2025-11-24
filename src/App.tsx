@@ -8,6 +8,7 @@ import AdminShipment from '@/pages/AdminShipment';
 import AllShipmentsMap from '@/pages/AllShipmentsMap';
 import AdminProfile from '@/pages/AdminProfile';
 import AdminIssues from '@/pages/AdminIssues';
+import RiderApproval from '@/pages/RiderApproval';
 
 function App() {
   return (
@@ -64,6 +65,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminIssues />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/riders"
+            element={
+              <ProtectedRoute>
+                <RiderApproval />
               </ProtectedRoute>
             }
           />
