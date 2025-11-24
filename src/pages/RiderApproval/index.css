@@ -279,6 +279,16 @@
   background: #d32f2f;
 }
 
+.btn-remove {
+  background: #ff5722;
+  color: white;
+  width: 100%;
+}
+
+.btn-remove:hover {
+  background: #e64a19;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

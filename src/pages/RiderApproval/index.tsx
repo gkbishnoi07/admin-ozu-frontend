@@ -153,7 +153,7 @@ export default function RiderApprovalPage() {
         )}
 
         {activeTab === 'approved' && (
-          <ApprovedRidersTab riders={approvedRiders} />
+          <ApprovedRidersTab riders={approvedRiders} onRemove={handleReject} />
         )}
       </div>
 
@@ -266,9 +266,10 @@ function PendingRidersTab({ riders, onApprove, onApproveWithEdit, onReject }: Pe
 // -------------------------
 interface ApprovedRidersTabProps {
   riders: ApprovedRider[];
+  onRemove: (riderId: string | number) => void;
 }
 
-function ApprovedRidersTab({ riders }: ApprovedRidersTabProps) {
+function ApprovedRidersTab({ riders, onRemove }: ApprovedRidersTabProps) {
   if (riders.length === 0) {
     return (
       <div className="empty-state">
@@ -315,6 +316,15 @@ function ApprovedRidersTab({ riders }: ApprovedRidersTabProps) {
                 {new Date(rider.createdAt).toLocaleDateString()}
               </span>
             </div>
+          </div>
+
+          <div className="rider-actions">
+            <button
+              onClick={() => onRemove(rider.id)}
+              className="btn-remove"
+            >
+              🗑️ Remove Rider
+            </button>
           </div>
         </div>
       ))}
