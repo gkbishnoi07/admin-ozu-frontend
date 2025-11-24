@@ -488,16 +488,21 @@ function AdminShipment() {
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <span>Shipment #{shipment.id}</span>
-                            {shipment.status === 'pending' && (
-                              <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" title="Waiting for rider"></span>
-                            )}
-                            {shipment.status === 'assigned' && (
-                              <span className="w-2 h-2 bg-green-400 rounded-full" title="Accepted - Waiting for pickup"></span>
-                            )}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span>Shipment #{shipment.id}</span>
+                              {shipment.status === 'pending' && (
+                                <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" title="Waiting for rider"></span>
+                              )}
+                              {shipment.status === 'assigned' && (
+                                <span className="w-2 h-2 bg-green-400 rounded-full" title="Accepted - Waiting for pickup"></span>
+                              )}
+                              {shipment.status === 'picked_up' && (
+                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" title="Picked up - On the way"></span>
+                              )}
+                            </div>
                             {shipment.status === 'picked_up' && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" title="Picked up - On the way"></span>
+                              <span className="text-xs text-blue-600 font-medium">🚴 On the way</span>
                             )}
                           </div>
                         </button>
