@@ -78,13 +78,27 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
     if (!/^[6-9]\d{9}$/.test(formData.mobile.replace(/\s+/g, ''))) {
       newErrors.mobile = 'Enter valid 10-digit mobile number';
     }
-    if (!formData.locationLink.trim()) newErrors.locationLink = 'Location link is required';
+
+    // Customer location must be selected from the search box so backend gets lat/lng
+    if (!formData.locationLink.trim()) {
+      newErrors.locationLink = 'Please select customer location using the search above';
+    }
+
     if (!formData.address.trim()) newErrors.address = 'Address is required';
-    if (!formData.landmark.trim()) newErrors.landmark = 'Landmark is required';
+
+    // Make landmark optional (nice to have, but should not block sending requests)
+    // if (!formData.landmark.trim()) newErrors.landmark = 'Landmark is required';
+
     if (formData.price <= 0) newErrors.price = 'Price must be greater than 0';
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const isValid = Object.keys(newErrors).length === 0;
+    if (!isValid) {
+      // Extra feedback so it's obvious why the request didn't go out
+      console.warn('[ShipmentForm] Validation failed', newErrors);
+    }
+    return isValid;
   };
 
   const fetchRiders = async () => {
