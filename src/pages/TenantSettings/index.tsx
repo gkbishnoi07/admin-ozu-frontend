@@ -23,7 +23,7 @@ export default function TenantSettings() {
   const [isCreating, setIsCreating] = useState(false);
   
   // WhatsApp Business number - configurable via env
-  const whatsappNumber = import.meta.env.VITE_WABA_NUMBER || '91959XXXXXXX';
+  const whatsappNumber = import.meta.env.VITE_WABA_NUMBER
 
   useEffect(() => {
     if (user) {
