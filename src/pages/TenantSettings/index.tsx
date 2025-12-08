@@ -21,7 +21,6 @@ export default function TenantSettings() {
   const [copied, setCopied] = useState<'code' | 'link' | null>(null);
   const [missingTenant, setMissingTenant] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   
   // WhatsApp Business number - configurable via env
   const whatsappNumber = import.meta.env.VITE_WABA_NUMBER || '91959XXXXXXX';
@@ -45,7 +44,6 @@ export default function TenantSettings() {
     setIsLoading(true);
     setError(null);
     setMissingTenant(false);
-    setMessage(null);
     
     try {
       const data = await TenantAPI.getMyTenant();
@@ -66,7 +64,6 @@ export default function TenantSettings() {
     if (!user) return;
     setIsCreating(true);
     setError(null);
-    setMessage(null);
 
     const tenantName =
       (user.user_metadata as any)?.shopName ||
@@ -78,7 +75,6 @@ export default function TenantSettings() {
       const created = await TenantAPI.create(tenantName, joinCode);
       setTenant(created);
       setMissingTenant(false);
-      setMessage({ type: 'success', text: 'Tenant created. Share this join code with riders.' });
     } catch (err: any) {
       console.error('Error creating tenant:', err);
       setError(err.message || 'Failed to create tenant');
@@ -225,8 +221,6 @@ export default function TenantSettings() {
       </div>
     );
   }
-
-  const joinLink = generateJoinLink();
 
   const joinLink = generateJoinLink();
 
