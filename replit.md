@@ -90,14 +90,15 @@ The project uses the following environment variables (stored in `.env`):
 3. Configured "Start application" workflow
 4. Set up static deployment configuration
 5. Verified application runs successfully
-6. **UI Redesign - Minimal, Classic Design**
-   - Implemented consistent blue-500 accent color throughout
-   - Updated Login page with clean, professional styling
-   - Pill-style navigation tabs with blue accent
-   - Redesigned forms with consistent input styling
-   - Clean card components with subtle shadows and borders
-   - Unified button styling (primary: blue-500, secondary: neutral)
-   - Improved typography and spacing consistency
+6. **UI Redesign - Purple/Violet Theme (Matching Ozu Website)**
+   - Purple/violet gradient background for Login page matching theozu.com
+   - Gradient header for Admin Shipment Portal (violet to purple to fuchsia)
+   - Purple gradient buttons with shadow effects
+   - Violet accent color throughout (links, focus states, active tabs)
+   - Modern rounded corners (rounded-xl, rounded-2xl) on cards and inputs
+   - Glass-effect navigation pills with backdrop blur on header
+   - Consistent violet-600 accent for interactive elements
+   - White cards with clean shadows on gradient backgrounds
 
 ## Development Commands
 - `npm run dev` - Start development server (port 5000)
