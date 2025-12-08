@@ -167,10 +167,10 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Create Delivery Request</h2>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-5">Create Delivery Request</h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Customer Location Search */}
         <div>
           <LocationSearchInput
@@ -185,7 +185,6 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
             landmark={customerLandmark}
             onHouseAddressChange={(value) => {
               setCustomerHouseAddress(value);
-              // Update address in formData
               if (formData.locationLink) {
                 const fullAddress = [value, customerLocationDisplay].filter(Boolean).join(', ');
                 setFormData(prev => ({ ...prev, address: fullAddress }));
@@ -193,9 +192,7 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
             }}
             onLandmarkChange={(value) => {
               setCustomerLandmark(value);
-              // Update landmark in formData
               setFormData(prev => ({ ...prev, landmark: value }));
-              // Clear landmark error
               setErrors(prev => ({ ...prev, landmark: undefined }));
             }}
           />
@@ -203,36 +200,36 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
 
         {/* Customer Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Customer Name <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Customer Name <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
             placeholder="John Doe"
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.name ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              errors.name ? 'border-red-400' : 'border-gray-200'
             }`}
           />
-          {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
+          {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
         </div>
 
         {/* Customer Mobile */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Customer Mobile Number <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Customer Mobile Number <span className="text-red-400">*</span>
           </label>
           <input
             type="tel"
             value={formData.mobile}
             onChange={(e) => handleChange('mobile', e.target.value)}
             placeholder="+91 XXXXX XXXXX"
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.mobile ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              errors.mobile ? 'border-red-400' : 'border-gray-200'
             }`}
           />
-          {errors.mobile && <p className="text-xs text-red-600 mt-1">{errors.mobile}</p>}
+          {errors.mobile && <p className="text-xs text-red-500 mt-1">{errors.mobile}</p>}
         </div>
 
         {/* Address and Landmark are now included in LocationSearchInput above */}
@@ -251,8 +248,8 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
 
         {/* Delivery Price */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Delivery Price (₹) <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Delivery Price (₹) <span className="text-red-400">*</span>
           </label>
           <input
             type="number"
@@ -261,26 +258,25 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
             placeholder="50"
             min="0"
             step="10"
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.price ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+              errors.price ? 'border-red-400' : 'border-gray-200'
             }`}
           />
-          {errors.price && <p className="text-xs text-red-600 mt-1">{errors.price}</p>}
-          <p className="text-xs text-gray-500 mt-1">Amount rider will receive</p>
+          {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
+          <p className="text-xs text-gray-400 mt-1">Amount rider will receive</p>
         </div>
 
         {/* Submit Buttons */}
-        <div className="space-y-3">
+        <div className="space-y-3 pt-2">
           <button
             type="submit"
             disabled={disabled}
-            className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-sm"
           >
             {disabled ? (
               <>
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 Please enable location & mobile number
               </>
@@ -298,7 +294,7 @@ function ShipmentForm({ onSubmit, disabled }: ShipmentFormProps) {
             type="button"
             onClick={handleSpecificRiderClick}
             disabled={disabled}
-            className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />

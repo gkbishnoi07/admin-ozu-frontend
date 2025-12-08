@@ -70,13 +70,13 @@ export default function AddressSelector({ selectedAddress, onAddressChange }: Ad
 
   if (addresses.length === 0) {
     return (
-      <div className="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center">
-        <p className="text-sm text-gray-600 mb-3">No addresses found</p>
+      <div className="p-5 bg-gray-50 border border-gray-200 rounded-lg text-center">
+        <p className="text-sm text-gray-500 mb-3">No addresses found</p>
         <button
           onClick={() => navigate('/profile')}
-          className="text-sm text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium"
+          className="text-sm text-white bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
         >
-          Add Address in Profile →
+          Add Address in Profile
         </button>
       </div>
     );
@@ -85,12 +85,12 @@ export default function AddressSelector({ selectedAddress, onAddressChange }: Ad
   return (
     <div ref={dropdownRef} className="relative">
       <div className="flex items-center justify-between mb-2">
-        <label className="block text-sm font-medium text-blue-900">
-          Your Location (Shop Address) <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-gray-700">
+          Your Location (Shop Address) <span className="text-red-400">*</span>
         </label>
         <button
           onClick={() => navigate('/profile')}
-          className="text-xs text-blue-600 hover:text-blue-700 hover:underline"
+          className="text-xs text-blue-500 hover:text-blue-600"
         >
           Manage Addresses
         </button>
@@ -99,7 +99,7 @@ export default function AddressSelector({ selectedAddress, onAddressChange }: Ad
       {/* Dropdown Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-3 bg-white border border-gray-300 rounded-lg flex items-center justify-between hover:border-blue-500 transition-colors"
+        className="w-full p-3 bg-white border border-gray-200 rounded-lg flex items-center justify-between hover:border-blue-500 transition-colors"
       >
         <div className="flex items-center gap-2 flex-1 text-left">
           <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0" />

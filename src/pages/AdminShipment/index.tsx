@@ -336,13 +336,13 @@ function AdminShipment() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Toast Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {notifications.map((notification, index) => (
           <div
             key={index}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in"
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md flex items-center gap-3 animate-slide-in"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -353,49 +353,50 @@ function AdminShipment() {
       </div>
 
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 py-5 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Admin Shipment Portal</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">Admin Shipment Portal</h1>
               <p className="text-sm text-gray-500 mt-1">
                 {adminName ? `Welcome, ${adminName}` : 'Create and manage delivery requests'}
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            {/* Navigation Pills */}
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
               <button
                 onClick={() => navigate('/profile')}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center gap-2 font-medium"
+                className="px-4 py-2 text-gray-600 rounded-md hover:bg-white hover:shadow-sm flex items-center gap-2 font-medium transition-all"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 Profile
               </button>
               <button
                 onClick={() => navigate('/issues')}
-                className={`px-4 py-2 rounded-lg flex items-center gap-2 font-semibold relative transition-all ${
+                className={`px-4 py-2 rounded-md flex items-center gap-2 font-medium transition-all relative ${
                   issueCounts.pending > 0
-                    ? 'bg-red-600 text-white hover:bg-red-700 animate-pulse'
-                    : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                    ? 'bg-white shadow-sm text-red-600'
+                    : 'text-gray-600 hover:bg-white hover:shadow-sm'
                 }`}
                 title={issueCounts.pending > 0 ? `${issueCounts.pending} issue(s) need attention` : 'View issues'}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                {issueCounts.pending > 0 ? '⚠️ Issues' : 'Issues'}
+                Issues
                 {issueCounts.pending > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-white text-red-600 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-red-600 shadow-lg">
+                  <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {issueCounts.pending}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => navigate('/riders')}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 font-semibold"
+                className="px-4 py-2 text-gray-600 rounded-md hover:bg-white hover:shadow-sm flex items-center gap-2 font-medium transition-all"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 Riders
@@ -403,25 +404,25 @@ function AdminShipment() {
               <button
                 onClick={() => navigate('/map')}
                 disabled={!adminMobile || !selectedAddress}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 font-semibold"
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-2 font-medium transition-all shadow-sm"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
-                MAP
+                Map
               </button>
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 flex items-center gap-2 font-medium"
+                className="px-4 py-2 text-gray-600 rounded-md hover:bg-white hover:shadow-sm flex items-center gap-2 font-medium transition-all"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4" />
                 Sign Out
               </button>
             </div>
           </div>
 
           {/* Admin Location & Mobile */}
-          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+          <div className="mt-5 bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
             {/* Address Selector */}
             <AddressSelector
               selectedAddress={selectedAddress}
@@ -429,20 +430,20 @@ function AdminShipment() {
             />
 
             {/* Admin Mobile Number */}
-            <div className="pt-3 border-t border-blue-200">
-              <label className="block text-sm font-medium text-blue-900 mb-2">
-                Your Mobile Number (Shared with rider) <span className="text-red-500">*</span>
+            <div className="pt-4 mt-4 border-t border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your Mobile Number (Shared with rider) <span className="text-red-400">*</span>
               </label>
               <input
                 type="tel"
                 value={adminMobile}
                 onChange={(e) => setAdminMobile(e.target.value)}
                 placeholder="+91 XXXXX XXXXX"
-                className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 readOnly
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Update in <button onClick={() => navigate('/profile')} className="text-blue-600 hover:underline">Profile Settings</button>
+              <p className="text-xs text-gray-400 mt-2">
+                Update in <button onClick={() => navigate('/profile')} className="text-blue-500 hover:text-blue-600">Profile Settings</button>
               </p>
             </div>
           </div>
@@ -462,16 +463,16 @@ function AdminShipment() {
 
           {/* Right: Tracking & Status */}
           <div className="space-y-6">
-            {/* Tab Navigation */}
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            {/* Shipments Card */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               {/* Tab Headers */}
-              <div className="flex border-b">
+              <div className="flex border-b border-gray-100">
                 <button
                   onClick={() => handleTabSwitch('active')}
-                  className={`flex-1 px-6 py-3 font-semibold text-sm transition-all ${
+                  className={`flex-1 px-6 py-3.5 font-medium text-sm transition-all ${
                     currentTab === 'active'
-                      ? 'bg-blue-600 text-white border-b-2 border-blue-700'
-                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      ? 'text-blue-500 border-b-2 border-blue-500 bg-white'
+                      : 'text-gray-500 hover:text-gray-700 bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -480,8 +481,8 @@ function AdminShipment() {
                     </svg>
                     Active Shipments
                     {allShipments.length > 0 && (
-                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-                        currentTab === 'active' ? 'bg-blue-700' : 'bg-blue-100 text-blue-700'
+                      <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                        currentTab === 'active' ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-600'
                       }`}>
                         {allShipments.length}
                       </span>
@@ -490,10 +491,10 @@ function AdminShipment() {
                 </button>
                 <button
                   onClick={() => handleTabSwitch('completed')}
-                  className={`flex-1 px-6 py-3 font-semibold text-sm transition-all ${
+                  className={`flex-1 px-6 py-3.5 font-medium text-sm transition-all ${
                     currentTab === 'completed'
-                      ? 'bg-green-600 text-white border-b-2 border-green-700'
-                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      ? 'text-blue-500 border-b-2 border-blue-500 bg-white'
+                      : 'text-gray-500 hover:text-gray-700 bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -502,8 +503,8 @@ function AdminShipment() {
                     </svg>
                     Completed
                     {completedShipments.length > 0 && (
-                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-                        currentTab === 'completed' ? 'bg-green-700' : 'bg-green-100 text-green-700'
+                      <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                        currentTab === 'completed' ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-600'
                       }`}>
                         {completedShipments.length}
                       </span>
@@ -515,43 +516,42 @@ function AdminShipment() {
               {/* Tab Content */}
               {currentTab === 'active' ? (
                 allShipments.length > 0 ? (
-                  <div className="p-2">
+                  <div className="p-4">
                     <div className="flex flex-wrap gap-2">
                       {allShipments.map((shipment, index) => (
                         <button
                           key={shipment.id}
                           onClick={() => handleShipmentSwitch(index)}
-                          className={`px-4 py-2 rounded-lg font-medium text-sm transition-all relative ${
+                          className={`px-4 py-2.5 rounded-lg font-medium text-sm transition-all relative ${
                             activeShipmentIndex === index
-                              ? 'bg-blue-600 text-white shadow-md'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'bg-blue-500 text-white shadow-sm'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
                               <span>Shipment #{shipment.id}</span>
                               {shipment.status === 'pending' && (
-                                <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" title="Waiting for rider"></span>
+                                <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" title="Waiting for rider"></span>
                               )}
                               {shipment.status === 'assigned' && (
-                                <span className="w-2 h-2 bg-green-400 rounded-full" title="Accepted - Waiting for pickup"></span>
+                                <span className="w-2 h-2 bg-emerald-400 rounded-full" title="Accepted - Waiting for pickup"></span>
                               )}
                               {shipment.status === 'picked_up' && (
-                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" title="Picked up - On the way"></span>
+                                <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" title="Picked up - On the way"></span>
                               )}
                               {shipmentIssues[shipment.id] && (
                                 <span className="flex items-center gap-1 text-xs" title={`${shipmentIssues[shipment.id]} issue(s) reported`}>
-                                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                                  <span className={activeShipmentIndex === index ? 'text-yellow-200' : 'text-red-600'}>⚠️</span>
+                                  <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
                                 </span>
                               )}
                             </div>
                             {shipment.status === 'picked_up' && (
-                              <span className={`text-xs font-medium ${activeShipmentIndex === index ? 'text-blue-100' : 'text-blue-600'}`}>🚴 On the way</span>
+                              <span className={`text-xs ${activeShipmentIndex === index ? 'text-blue-100' : 'text-blue-500'}`}>On the way</span>
                             )}
                             {shipmentIssues[shipment.id] && (
-                              <span className={`text-xs font-medium ${activeShipmentIndex === index ? 'text-yellow-100' : 'text-red-600'}`}>
-                                ⚠️ Issue reported
+                              <span className={`text-xs ${activeShipmentIndex === index ? 'text-amber-100' : 'text-red-500'}`}>
+                                Issue reported
                               </span>
                             )}
                           </div>
@@ -560,11 +560,11 @@ function AdminShipment() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-8 text-center">
-                    <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  <div className="p-12 text-center">
+                    <svg className="w-12 h-12 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                     </svg>
-                    <p className="text-sm text-gray-500">No active shipments</p>
+                    <p className="text-sm text-gray-400">No active shipments</p>
                   </div>
                 )
               ) : (
@@ -572,55 +572,55 @@ function AdminShipment() {
                   {completedShipments.length > 0 ? (
                     <div className="space-y-3">
                       {completedShipments.map((shipment) => (
-                        <div key={shipment.id} className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div key={shipment.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-2">
-                              <h4 className="font-semibold text-gray-900">Shipment #{shipment.id}</h4>
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                ✅ Delivered
+                              <h4 className="font-medium text-gray-900">Shipment #{shipment.id}</h4>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+                                Delivered
                               </span>
                             </div>
                             <div className="text-right">
-                              <div className="text-lg font-bold text-green-700">
+                              <div className="text-lg font-semibold text-gray-700">
                                 ₹{shipment.price || 0}
                               </div>
                             </div>
                           </div>
 
                           {/* Customer Details */}
-                          <div className="bg-white rounded-lg p-3 mb-3">
-                            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Customer</p>
-                            <div className="space-y-1 text-sm text-gray-700">
-                              <p><strong>Name:</strong> {shipment.customerName || 'N/A'}</p>
-                              <p><strong>Mobile:</strong> {shipment.customerMobile || 'N/A'}</p>
-                              <p><strong>Landmark:</strong> {shipment.landmark || 'N/A'}</p>
+                          <div className="bg-white rounded-lg p-3 mb-3 border border-gray-100">
+                            <p className="text-xs font-medium text-gray-400 uppercase mb-2">Customer</p>
+                            <div className="space-y-1 text-sm text-gray-600">
+                              <p><span className="text-gray-500">Name:</span> {shipment.customerName || 'N/A'}</p>
+                              <p><span className="text-gray-500">Mobile:</span> {shipment.customerMobile || 'N/A'}</p>
+                              <p><span className="text-gray-500">Landmark:</span> {shipment.landmark || 'N/A'}</p>
                             </div>
                           </div>
 
                           {/* Rider Details */}
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                            <p className="text-xs font-semibold text-blue-700 uppercase mb-2">🏍️ Delivered By</p>
-                            <div className="space-y-1 text-sm text-gray-700">
-                              <p><strong>Name:</strong> {shipment.assignedRiderName || 'N/A'}</p>
-                              <p><strong>Mobile:</strong> {shipment.assignedRiderMobile || 'N/A'}</p>
+                          <div className="bg-white rounded-lg p-3 mb-2 border border-gray-100">
+                            <p className="text-xs font-medium text-gray-400 uppercase mb-2">Delivered By</p>
+                            <div className="space-y-1 text-sm text-gray-600">
+                              <p><span className="text-gray-500">Name:</span> {shipment.assignedRiderName || 'N/A'}</p>
+                              <p><span className="text-gray-500">Mobile:</span> {shipment.assignedRiderMobile || 'N/A'}</p>
                             </div>
                           </div>
 
                           {/* Timestamp */}
                           {shipment.deliveredAt && (
-                            <p className="text-xs text-gray-500 mt-2">
-                              🕐 Delivered: {new Date(shipment.deliveredAt).toLocaleString()}
+                            <p className="text-xs text-gray-400 mt-2">
+                              Delivered: {new Date(shipment.deliveredAt).toLocaleString()}
                             </p>
                           )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div className="text-center py-12">
+                      <svg className="w-12 h-12 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <p className="text-sm text-gray-500">No completed shipments yet</p>
+                      <p className="text-sm text-gray-400">No completed shipments yet</p>
                     </div>
                   )}
                 </div>
