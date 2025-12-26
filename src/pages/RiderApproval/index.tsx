@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RidersAPI } from '@/lib/api';
+import { cache, CacheKeys } from '@/lib/cache';
 import type { PendingRider, ApprovedRider } from '@/types/riderApproval';
 import './index.css';
 import {ArrowLeft,} from 'lucide-react';
@@ -19,13 +20,29 @@ export default function RiderApprovalPage() {
   const [processingRiders, setProcessingRiders] = useState<Set<string | number>>(new Set());
 
   // Fetch riders data
-  const fetchRiders = async () => {
+  const fetchRiders = async (showCachedFirst = false) => {
     try {
-      // Fetch pending riders
+      // Load cached data immediately if available
+      if (showCachedFirst) {
+        const cachedPending = cache.get(CacheKeys.RIDERS_PENDING);
+        const cachedApproved = cache.get(CacheKeys.RIDERS_APPROVED);
+        
+        if (cachedPending) {
+          setPendingRiders(cachedPending.riders || []);
+        }
+        if (cachedApproved) {
+          setApprovedRiders(cachedApproved.riders || []);
+        }
+        if (cachedPending || cachedApproved) {
+          setLoading(false);
+        }
+      }
+
+      // Fetch pending riders (will use cache if available)
       const pendingData = await RidersAPI.getPending();
       setPendingRiders(pendingData.riders || []);
 
-      // Fetch approved riders
+      // Fetch approved riders (will use cache if available)
       const approvedData = await RidersAPI.getApproved();
       setApprovedRiders(approvedData.riders || []);
 
@@ -38,9 +55,10 @@ export default function RiderApprovalPage() {
   };
 
   useEffect(() => {
-    fetchRiders();
+    // Load cached data immediately, then refresh
+    fetchRiders(true);
     // Refresh every 30 seconds
-    const interval = setInterval(fetchRiders, 30000);
+    const interval = setInterval(() => fetchRiders(false), 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -53,7 +71,8 @@ export default function RiderApprovalPage() {
     
     try {
       await RidersAPI.approve(riderId);
-      fetchRiders(); // Refresh list
+      // Cache is invalidated by API, refresh immediately
+      fetchRiders(false);
     } catch (error) {
       console.error('Error approving rider:', error);
       alert('❌ Failed to approve rider');
@@ -111,7 +130,8 @@ export default function RiderApprovalPage() {
     
     try {
       await RidersAPI.reject(riderId);
-      fetchRiders(); // Refresh list
+      // Cache is invalidated by API, refresh immediately
+      fetchRiders(false);
     } catch (error) {
       console.error('Error rejecting rider:', error);
       alert('❌ Failed to reject rider');

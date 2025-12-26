@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { ShipmentAPI, IssuesAPI } from '../../lib/api';
+import { cache, CacheKeys, CacheTTL } from '../../lib/cache';
 import type { AdminAddress } from '../../types/address';
 import AddressSelector from '../../components/AddressSelector';
 import ShipmentForm from './ShipmentForm';
@@ -62,6 +63,16 @@ function AdminShipment() {
     if (!user) return;
 
     try {
+      // Check cache first
+      const cacheKey = CacheKeys.ADMIN_PROFILE(user.id);
+      const cached = cache.get<{ name?: string; mobile?: string }>(cacheKey);
+      
+      if (cached && cached.mobile) {
+        setAdminName(cached.name || '');
+        setAdminMobile(cached.mobile || '');
+        return;
+      }
+
       // Fetch basic profile from Supabase
       const { data, error } = await supabase
         .from('admin_profiles')
@@ -76,10 +87,23 @@ function AdminShipment() {
       if (data) {
         setAdminName(data.name || '');
         setAdminMobile(data.mobile || '');
+        
+        // Cache the profile
+        cache.set(cacheKey, {
+          name: data.name || null,
+          mobile: data.mobile || null,
+        }, CacheTTL.PROFILE);
       } else {
         // Fallback to user metadata
-        setAdminName(user.user_metadata?.name || '');
-        setAdminMobile(user.user_metadata?.mobile || '');
+        const name = user.user_metadata?.name || '';
+        const mobile = user.user_metadata?.mobile || '';
+        setAdminName(name);
+        setAdminMobile(mobile);
+        
+        // Cache user metadata as well
+        if (mobile) {
+          cache.set(cacheKey, { name, mobile }, CacheTTL.PROFILE);
+        }
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -107,7 +131,7 @@ function AdminShipment() {
     const issuesMap: Record<string | number, number> = {};
     
     try {
-      // Fetch issues for each shipment in parallel
+      // Fetch issues for each shipment in parallel (cache handled by API)
       await Promise.all(
         shipments.map(async (shipment) => {
           try {
@@ -135,7 +159,8 @@ function AdminShipment() {
   // Fetch active shipments - use useCallback to memoize
   const fetchActiveShipments = useCallback(async () => {
     try {
-      const data = await ShipmentAPI.getActive();
+      // Use cached data if available, API will handle cache internally
+      const data = await ShipmentAPI.getActive(adminMobile);
       
       if (data && Array.isArray(data)) {
         // Use refs to access current state without causing dependency issues
@@ -212,7 +237,8 @@ function AdminShipment() {
   // Fetch completed shipments
   const fetchCompletedShipments = async () => {
     try {
-      const data = await ShipmentAPI.getCompleted();
+      // Use cached data if available, API will handle cache internally
+      const data = await ShipmentAPI.getCompleted(adminMobile);
       
       if (data && Array.isArray(data)) {
         setCompletedShipments(data);
@@ -298,6 +324,7 @@ function AdminShipment() {
       setActiveShipmentIndex(newShipments.length - 1);
       setActiveShipment(data);
       
+      // Cache is already invalidated by ShipmentAPI.create
       // No popup messages - silently add to list
     } catch (error: any) {
       console.error('Failed to create shipment:', error);

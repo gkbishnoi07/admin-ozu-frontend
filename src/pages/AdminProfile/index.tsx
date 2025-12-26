@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
+import { cache, CacheKeys, CacheTTL } from "../../lib/cache";
 import AddressManager from "../../components/AddressManager";
 import Lottie from "lottie-react";
 import riderAnimation from "@/assets/loader-rider.json";
@@ -51,6 +52,21 @@ export default function AdminProfile() {
     setIsLoading(true);
 
     try {
+      // Check cache first
+      const cacheKey = CacheKeys.ADMIN_PROFILE(user.id);
+      const cached = cache.get<{ mobile: string; name: string; shop_name?: string }>(cacheKey);
+      
+      if (cached) {
+        setProfile({
+          mobile: cached.mobile,
+          name: cached.name,
+          shopName: cached.shop_name || "",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Fetch from Supabase
       const { data, error } = await supabase
         .from("admin_profiles")
         .select("*")
@@ -60,11 +76,19 @@ export default function AdminProfile() {
       if (error && error.code !== "PGRST116") throw error;
 
       if (data) {
-        setProfile({
+        const profileData = {
           mobile: data.mobile,
           name: data.name,
           shopName: data.shop_name || "",
-        });
+        };
+        setProfile(profileData);
+        
+        // Cache the profile data
+        cache.set(cacheKey, {
+          mobile: data.mobile,
+          name: data.name,
+          shop_name: data.shop_name || null,
+        }, CacheTTL.PROFILE);
       }
     } catch {
       setMessage({ type: "error", text: "Failed to load profile" });
@@ -104,11 +128,19 @@ export default function AdminProfile() {
 
       if (error) throw error;
 
+      // Invalidate cache
+      if (user) {
+        cache.remove(CacheKeys.ADMIN_PROFILE(user.id));
+      }
+
       setMessage({
         type: "success",
         text: "✅ Profile saved successfully!",
       });
       setIsEditOpen(false);
+      
+      // Reload profile to update cache
+      loadProfile();
     } catch {
       setMessage({
         type: "error",

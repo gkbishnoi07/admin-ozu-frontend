@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { cache, CacheKeys, CacheTTL } from './cache';
 
 const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL || "https://ozu-source-code.onrender.com/api";
 
@@ -55,19 +56,39 @@ export function getBaseUrl() {
 
 // Riders endpoints (adjust to your FastAPI routes if needed)
 export const RidersAPI = {
-  listLive: () => apiGet<import("../types/rider").Rider[]>("/riders/live"),
+  listLive: async () => {
+    const cacheKey = CacheKeys.RIDERS_LIVE;
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+    
+    const data = await apiGet<import("../types/rider").Rider[]>("/riders/live");
+    cache.set(cacheKey, data, CacheTTL.RIDERS);
+    return data;
+  },
   
   // Rider Approval endpoints
   getPending: async () => {
+    const cacheKey = CacheKeys.RIDERS_PENDING;
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+    
     const response = await authenticatedFetch('/riders/pending');
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    return response.json();
+    const data = await response.json();
+    cache.set(cacheKey, data, CacheTTL.RIDERS);
+    return data;
   },
   
   getApproved: async () => {
+    const cacheKey = CacheKeys.RIDERS_APPROVED;
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+    
     const response = await authenticatedFetch('/riders/approved');
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    return response.json();
+    const data = await response.json();
+    cache.set(cacheKey, data, CacheTTL.RIDERS);
+    return data;
   },
   
   approve: async (riderId: string | number, riderName?: string) => {
@@ -78,7 +99,14 @@ export const RidersAPI = {
       method: 'POST',
     });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    return response.json();
+    const data = await response.json();
+    
+    // Invalidate rider caches
+    cache.remove(CacheKeys.RIDERS_PENDING);
+    cache.remove(CacheKeys.RIDERS_APPROVED);
+    cache.remove(CacheKeys.RIDERS_LIVE);
+    
+    return data;
   },
   
   reject: async (riderId: string | number) => {
@@ -86,7 +114,14 @@ export const RidersAPI = {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    return response.json();
+    const data = await response.json();
+    
+    // Invalidate rider caches
+    cache.remove(CacheKeys.RIDERS_PENDING);
+    cache.remove(CacheKeys.RIDERS_APPROVED);
+    cache.remove(CacheKeys.RIDERS_LIVE);
+    
+    return data;
   },
 };
 
@@ -103,7 +138,12 @@ export const ShipmentAPI = {
       throw new Error(errorData.detail || `${response.status} ${response.statusText}`);
     }
     
-    return response.json();
+    const result = await response.json();
+    
+    // Invalidate active shipments cache
+    cache.clearPattern('shipments_active');
+    
+    return result;
   },
   
   getResponses: async (shipmentId: string) => {
@@ -127,16 +167,28 @@ export const ShipmentAPI = {
   },
   
   // Updated to use authenticated endpoints (no mobile parameter needed)
-  getActive: async () => {
+  getActive: async (adminMobile?: string) => {
+    const cacheKey = CacheKeys.SHIPMENTS_ACTIVE(adminMobile);
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+    
     const response = await authenticatedFetch('/shipments/active');
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    return response.json();
+    const data = await response.json();
+    cache.set(cacheKey, data, CacheTTL.SHIPMENTS_ACTIVE);
+    return data;
   },
   
-  getCompleted: async () => {
+  getCompleted: async (adminMobile?: string) => {
+    const cacheKey = CacheKeys.SHIPMENTS_COMPLETED(adminMobile);
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+    
     const response = await authenticatedFetch('/shipments/completed');
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    return response.json();
+    const data = await response.json();
+    cache.set(cacheKey, data, CacheTTL.SHIPMENTS_COMPLETED);
+    return data;
   },
 };
 
@@ -179,14 +231,22 @@ export const IssuesAPI = {
   
   // Get issues for a specific shipment
   getByShipmentId: async (shipmentId: string | number) => {
+    const cacheKey = CacheKeys.ISSUES_BY_SHIPMENT(shipmentId);
+    const cached = cache.get(cacheKey);
+    if (cached) return cached;
+    
     const response = await authenticatedFetch(`/shipments/${shipmentId}/issues`);
     if (!response.ok) {
       if (response.status === 404) {
-        return { issues: [] }; // No issues found
+        const emptyResult = { issues: [] };
+        cache.set(cacheKey, emptyResult, CacheTTL.ISSUES);
+        return emptyResult; // No issues found
       }
       throw new Error(`${response.status} ${response.statusText}`);
     }
-    return response.json();
+    const data = await response.json();
+    cache.set(cacheKey, data, CacheTTL.ISSUES);
+    return data;
   },
 };
 
