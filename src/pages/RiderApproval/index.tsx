@@ -499,7 +499,7 @@ function ApprovedRidersTab({ riders, onRemove, processingRiders }: ApprovedRider
                   Removing...
                 </>
               ) : (
-                '🗑️ Remove Rider'
+                'Remove Rider'
               )}
             </button>
           </div>
