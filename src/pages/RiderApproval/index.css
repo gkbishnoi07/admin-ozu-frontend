@@ -1,0 +1,450 @@
+.riders-approval-page{
+   min-height: 100vh;
+   padding-bottom: 100px;
+  font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    width: 100%;
+  max-width: 35%;
+  margin: 0 auto;
+}
+/* ================= BASE ================= */
+
+.mobile-ui {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 0; /* horizontal padding removed to rely on global px-4 */
+  background: #ffffff;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ================= HEADER ================= */
+
+.mobile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0; /* horizontal padding removed */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.back-btn svg {
+  display: block;
+}
+
+.logo-text {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+
+/* logo */
+.ai-logo-wrap {
+  width: 109px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+}
+
+.ai-logo-img {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* profile avatar */
+.ai-profile-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 9999px;
+  
+  overflow: hidden;
+  padding: 0;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.profile-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: none;
+  background: none;
+}
+
+.profile-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ================= PAGE TITLE ================= */
+
+.page-title {
+  margin-top: 12px;
+}
+
+.page-title h2 {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 120%;
+  letter-spacing: -0.02em;
+  color: #111111;
+}
+
+.page-title p {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 130%;
+  letter-spacing: -0.01em;
+  color: #5f5f5f;
+}
+
+/* ================= TABS ================= */
+
+.pill-tabs {
+  display: flex;
+  margin-top: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+}
+
+.pill {
+  flex: 1;
+  height: 44px;
+  border: none;
+  background: #ffffff;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pill.active {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* ================= LIST ================= */
+
+.mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ================= RIDER CARD ================= */
+
+.rider-card {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  padding-bottom: 0;
+  background: #ffffff;
+}
+
+.rider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rider-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #a3e635;
+  color: #14532d;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rider-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.rider-info .contact {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.rider-info .wa-id {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ================= BUSY BADGE ================= */
+
+.busy-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.busy-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #dc2626;
+  border-radius: 50%;
+}
+
+/* ================= DETAILS ================= */
+
+.rider-details .detail-row {
+  background: #f3f3f3;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.detail-row .label {
+  color: #6b7280;
+}
+
+/* ================= ACTION BUTTONS ================= */
+
+.btn-remove,
+.btn-approve {
+  width: calc(100% + 32px);
+  margin-left: -16px;
+  margin-top: 16px;
+  height: 48px;
+  border-radius: 0 0 16px 16px;
+  background: #d43c2c;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-approve {
+  background: #16a34a;
+}
+
+/* Secondary buttons */
+
+.btn-edit {
+  height: 40px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #111827;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-reject {
+  height: 40px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+}
+
+/* ================= MODAL ================= */
+
+.modal-content {
+  border-radius: 16px;
+  padding: 20px;
+  max-width: 420px;
+  width: 100%;
+  background: #ffffff;
+}
+
+.modal-content h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111111;
+}
+
+.modal-content p.helper-text {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* ================= INPUT ================= */
+
+.name-input {
+  width: 100%;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 0 12px;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.input-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ================= MODAL ACTIONS ================= */
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions button {
+  flex: 1;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cancel-btn {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  cursor: pointer;
+}
+
+.approve-btn {
+  background: #16a34a;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+}
+
+/* ================= EMPTY STATE ================= */
+
+.empty-state {
+  background: transparent;
+  padding: 40px 0; /* horizontal padding removed */
+  text-align: center;
+  color: #6b7280;
+}
+
+/* ================= DESKTOP ================= */
+
+@media (min-width: 768px) {
+  .mobile-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+/* ================= LOADING SCREEN ================= */
+
+.loading-screen {
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-text {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+/* ===== VISUAL POLISH FIXES (SAFE PATCH) ===== */
+
+/* Make important values more readable */
+.detail-row span:last-child {
+  font-weight: 600;
+  color: #111;
+}
+
+/* Make rider name stand out */
+.rider-info h3 {
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+/* Improve number visibility */
+.rider-info .contact,
+.rider-info .wa-id {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+/* Stronger approved badge */
+.busy-badge {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Improve Approved / Reject button presence */
+.btn-approve,
+.btn-reject {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* Improve card separation slightly */
+.rider-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Improve number/date clarity */
+.detail-row span:last-child {
+  font-weight: 600;
+  color: #111;
+}
+
+
+@media (max-width: 768px) {
+  
+   .riders-approval-page{max-width: 100%;}
+}

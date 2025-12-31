@@ -1,0 +1,63 @@
+
+
+Design a responsive web UI for a web app called **“Ozu Admin”**, used to manage delivery shipments.
+
+Style guidelines:
+
+* Classic, minimal design.
+* Mostly white or very light grey background with **one subtle accent color** only (e.g. a calm blue). No bright multi-color gradients.
+* Clean typography, good hierarchy, enough white space.
+* All elements should be perfectly aligned in a grid, with consistent margins, padding, and button sizes.
+* Use simple, soft shadows and rounded corners for cards and inputs.
+* The layout should look great on desktop but also adapt to tablet and mobile.
+
+Screens to design:
+
+1. **Login Screen**
+
+   * Centered card on a light background.
+   * Top: simple square logo icon and text “Ozu Admin”.
+   * Subtitle: “Sign in to manage deliveries”.
+   * Inside the card:
+
+     * Heading: “Welcome back”.
+     * Email address field with email icon.
+     * Password field with lock icon.
+     * “Forgot password?” text link aligned to the right under the password field.
+     * Primary “Sign In” button full width.
+     * Below: “Don’t have an account?” with “Sign up” link.
+   * Everything vertically centered with balanced spacing between elements.
+
+2. **Admin Shipment Portal (Dashboard)**
+
+   * Page title: “Admin Shipment Portal” with “Welcome, [user name]” under it.
+   * Overall layout: a simple **two-column grid** on desktop.
+   * Top section under the title:
+
+     * A card for saved addresses (with text like “No addresses found” and a secondary button “Add Address in Profile”).
+     * Below that, a single field: “Your Mobile Number (Shared with rider)” with an input and hint to update in profile settings.
+   * Top-right navigation as a horizontal row of buttons or pill-style tabs: **Profile, Issues, Riders, Map, Sign Out**.
+
+     * Same accent color for the primary action; the rest in subtle neutral tones with clear hover states.
+   * Left column: **Create Delivery Request** card
+
+     * Fields stacked vertically with good spacing and labels:
+
+       * Customer Location (search input)
+       * Customer Name
+       * Customer Mobile Number
+       * Delivery Price (₹) (with small helper text “Amount rider will receive”)
+     * At the bottom, a disabled primary button with label like “Please enable location & mobile number”.
+   * Right column: **Shipments card**
+
+     * Tabs at the top: “Active Shipments” and “Completed”.
+     * Card content centered with an icon and text “No active shipments” when empty.
+   * Consistent border radius, font sizes, and spacing across all cards, inputs, and buttons.
+
+General behavior:
+
+* Use neutral background and borders to keep the look classic and professional, avoiding strong or distracting colors.
+* Ensure every label, input, and button is aligned on the same vertical grid; avoid misaligned edges.
+* Provide generous padding inside cards and sections so the interface feels airy and not cramped.
+
+
