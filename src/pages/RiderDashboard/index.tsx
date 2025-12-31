@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LocationTracker } from './LocationTracker';
+import { LocationSharing } from './LocationSharing';
 import { AvailableShipments } from './AvailableShipments';
 import { ActiveDelivery } from './ActiveDelivery';
 import { User, LogOut, Package } from 'lucide-react';
@@ -209,11 +209,8 @@ export default function RiderDashboard() {
           )}
         </div>
 
-        {/* Location Tracker */}
-        <LocationTracker
-          riderId={rider.id}
-          isActive={status === 'available' || status === 'on_delivery'}
-        />
+        {/* Location Sharing - Start/Stop Button */}
+        <LocationSharing riderId={rider.id} />
 
         {/* Content based on status */}
         {status === 'on_delivery' && activeShipment ? (
