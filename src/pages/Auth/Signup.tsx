@@ -216,9 +216,7 @@ function Input({
   value,
   onChange,
   type = 'text',
-  rightIcon,
-  ...rest
-}: {
+  rightIcon}: {
   icon: React.ReactNode;
   placeholder: string;
   value: string;
